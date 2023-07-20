@@ -1711,8 +1711,8 @@ typedef NS_ENUM(NSInteger, BRDatePickerStyle) {
 
 // 支持动态设置选择的值
 - (void)setSelectDate:(NSDate *)selectDate {
-    _selectDate = selectDate;
-    _mSelectDate = selectDate;
+    _selectDate = [self convertDate:selectDate withTimeZone:self.timeZone];
+    _mSelectDate = [self convertDate:selectDate withTimeZone:self.timeZone];
     if (_datePicker || _pickerView) {
         // 刷新选择器数据
         [self reloadData];
@@ -1730,6 +1730,20 @@ typedef NS_ENUM(NSInteger, BRDatePickerStyle) {
 
 - (void)setAddCustomString:(NSString *)addCustomString {
     self.lastRowContent = addCustomString;
+}
+
+- (void)setMinDate:(NSDate *)minDate {
+    if (!_minDate) {
+        NSDate *mDate = [self convertDate:minDate withTimeZone:self.timeZone];
+        _minDate = mDate;
+    }
+}
+
+- (void)setMaxDate:(NSDate *)maxDate {
+    if (!_maxDate) {
+        NSDate *mDate = [self convertDate:maxDate withTimeZone:self.timeZone];
+        _maxDate = mDate;
+    }
 }
 
 #pragma mark - getter 方法
@@ -1960,6 +1974,30 @@ typedef NS_ENUM(NSInteger, BRDatePickerStyle) {
     if (endDate)
         [dataArr addObject:endDate];
     return dataArr;
+}
+
+#pragma mark - 轉換為時區時間
+- (NSDate *)convertDate:(NSDate *)date withTimeZone:(NSTimeZone *)timeZone {
+    // 建立一個日期格式化器
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    
+    // 設定時區
+    [formatter setTimeZone:timeZone];
+    
+    // 設定日期格式
+    [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    
+    // 將日期轉換成字串
+    NSString *dateString = [formatter stringFromDate:date];
+    
+    //user timezone formatter
+    NSDateFormatter *userDateformatter = [[NSDateFormatter alloc] init];
+    [userDateformatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    
+    // 轉換回日期
+    NSDate *convertedDate = [userDateformatter dateFromString:dateString];
+    
+    return convertedDate;
 }
 
 @end
